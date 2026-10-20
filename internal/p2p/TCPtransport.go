@@ -27,12 +27,12 @@ func (t* TCPtransport) ListenAndAccept() error {
 	if err != nil {
 		return fmt.Errorf("failed to listen on %s: %v", t.listenAddr, err.Error())
 	}
-	go t.acceptLoop()
+	go t.startAcceptLoop()
 
 	return nil
 }
 
-func (t *TCPtransport) acceptLoop()  {
+func (t *TCPtransport) startAcceptLoop()  {
 	for {
 		conn, err := t.listener.Accept()
 		if err != nil {
@@ -43,5 +43,7 @@ func (t *TCPtransport) acceptLoop()  {
 }
 
 func (t *TCPtransport) handleConn(conn net.Conn){
-	fmt.Printf("New incoming connection %v", conn)
+	peer := NewTCPPeer(conn, Inbound)
+	t.peers[conn.RemoteAddr()] = peer
+	fmt.Printf("New incoming connection {conn:%s, peerID: %s}\n", conn.RemoteAddr().String(), conn.RemoteAddr().String())
 }
