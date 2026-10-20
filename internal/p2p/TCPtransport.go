@@ -1,6 +1,7 @@
 package p2p
 
 import (
+	"fmt"
 	"net"
 	"sync"
 )
@@ -19,3 +20,18 @@ func NewTCPtransport(listenAddr string) *TCPtransport {
 	}
 }
 
+func (t* TCPtransport) ListenAndAccept() error {
+	var err error
+	t.listener, err = net.Listen("tcp", t.listenAddr)
+	if err != nil {
+		return fmt.Errorf("failed to listen on %s: %v", t.listenAddr, err)
+	}
+
+	t.peers = make(map[net.Addr]peer)
+
+	go t.acceptLoop()
+
+	return nil
+}
+
+func (t *TCPtransport) acceptLoop()
