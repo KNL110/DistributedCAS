@@ -1,0 +1,5 @@
+env: "dev"
+
+protocol:
+    type: "tcp"
+    port: ":4000"
