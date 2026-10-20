@@ -17,6 +17,7 @@ type TCPtransport struct {
 func NewTCPtransport(listenAddr string) *TCPtransport {
 	return &TCPtransport{
 		listenAddr: listenAddr,
+		peers: make(map[net.Addr]peer),
 	}
 }
 
@@ -24,14 +25,23 @@ func (t* TCPtransport) ListenAndAccept() error {
 	var err error
 	t.listener, err = net.Listen("tcp", t.listenAddr)
 	if err != nil {
-		return fmt.Errorf("failed to listen on %s: %v", t.listenAddr, err)
+		return fmt.Errorf("failed to listen on %s: %v", t.listenAddr, err.Error())
 	}
-
-	t.peers = make(map[net.Addr]peer)
-
 	go t.acceptLoop()
 
 	return nil
 }
 
-func (t *TCPtransport) acceptLoop()
+func (t *TCPtransport) acceptLoop()  {
+	for {
+		conn, err := t.listener.Accept()
+		if err != nil {
+			fmt.Printf("TCPTransport error: %s\n", err.Error())
+		}
+		go t.handleConn(conn)
+	}
+}
+
+func (t *TCPtransport) handleConn(conn net.Conn){
+	fmt.Printf("New incoming connection %v", conn)
+}
