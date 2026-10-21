@@ -4,11 +4,11 @@ import (
 	"fmt"
 )
 
-func Handshake(peer peer) error {
+func Handshake(peer Peer) error {
 	fmt.Printf("Handshake with peer %s\n", peer.Address())
 	return nil
 }
 
-func NopHandshake(peer) error {
+func NopHandshake(Peer) error {
 	return nil
 }

@@ -13,14 +13,21 @@ type Decoder interface {
 type GOBDecoder struct {}
 
 func (d GOBDecoder) Decode(r io.Reader,msg *RPC) error {
-	return gob.NewDecoder(r).Decode(msg)
+	msg.payload = nil
+	return gob.NewDecoder(r).Decode(&msg.payload)
 }
 
 type DefaultDecoder struct {}
 
 func (d DefaultDecoder) Decode(r io.Reader, msg *RPC) error {
 	buf := make([]byte, 1024)
+	
 	n, err := r.Read(buf)
+	msg.payload = buf[:n]
+
+	if n > 0 {
+		return nil
+	}
 	if err != nil {
 		return err
 	}
@@ -28,6 +35,5 @@ func (d DefaultDecoder) Decode(r io.Reader, msg *RPC) error {
 		return io.EOF
 	}
 
-	msg.payload = buf[:n]
 	return nil
 }
