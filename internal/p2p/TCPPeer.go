@@ -29,3 +29,7 @@ func (p *TCPPeer) Address() string {
 func (p *TCPPeer) Disconnect() error {
 	return p.conn.Close()
 }
+
+func (p *TCPPeer) close() error {
+	return p.conn.Close()
+}

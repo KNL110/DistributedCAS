@@ -11,6 +11,7 @@ type TCPtransport struct {
 	listener net.Listener
 	shakeHands func(peer peer) error
 	decoder Decoder
+	rpcChan chan RPC
 
 	mu sync.RWMutex
 	peers map[net.Addr]peer
@@ -32,10 +33,15 @@ func (t* TCPtransport) ListenAndAccept() error {
 		return fmt.Errorf("failed to listen on %s: %v", t.listenAddr, err.Error())
 	}
 	go t.startAcceptLoop()
-
+	
 	return nil
 }
 
+// a read-only channel that returns RPC messages received from peers
+func(t* TCPtransport) consume() <-chan RPC {
+	rpcChan := make(chan RPC)
+	return rpcChan
+}
 func (t *TCPtransport) startAcceptLoop()  {
 	for {
 		conn, err := t.listener.Accept()
@@ -56,15 +62,16 @@ func (t *TCPtransport) handleConn(conn net.Conn){
 	}
 	fmt.Printf("New incoming connection {conn:%s}\n", conn.RemoteAddr().String())
 
-	msg := &RPC{}
+	msg := RPC{}
 	
 	for {
-		if err := t.decoder.Decode(conn, msg); err != nil {
+		if err := t.decoder.Decode(conn, &msg); err != nil {
 			conn.Close()
 			fmt.Printf("TCP Decode Error: %s\n", err)
 			return
 		}
 		msg.from = conn.RemoteAddr()
+		t.rpcChan <- msg
 		// Process the decoded message (msg) here
 		fmt.Printf("message: %+v\n",msg)
 	}
