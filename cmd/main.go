@@ -13,7 +13,7 @@ func main() {
 
 	tr := p2p.NewTCPtransport(
 		config.Protocol.Port,
-		p2p.GOBDecoder{},
+		p2p.DefaultDecoder{},
 	)
 	if err := tr.ListenAndAccept(); err != nil {
 		log.Fatalf("Failed to start TCP transport: %v", err)

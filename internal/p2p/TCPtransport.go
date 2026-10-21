@@ -57,12 +57,14 @@ func (t *TCPtransport) handleConn(conn net.Conn){
 	fmt.Printf("New incoming connection {conn:%s}\n", conn.RemoteAddr().String())
 
 	msg := &message{}
+	
 	for {
 		if err := t.decoder.Decode(conn, msg); err != nil {
 			conn.Close()
 			fmt.Printf("TCP Decode Error: %s\n", err)
 			return
 		}
+		msg.from = conn.RemoteAddr()
 		// Process the decoded message (msg) here
 		fmt.Printf("message: %+v\n",msg)
 	}
