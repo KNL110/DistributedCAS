@@ -56,7 +56,7 @@ func (t *TCPtransport) handleConn(conn net.Conn){
 	}
 	fmt.Printf("New incoming connection {conn:%s}\n", conn.RemoteAddr().String())
 
-	msg := &message{}
+	msg := &RPC{}
 	
 	for {
 		if err := t.decoder.Decode(conn, msg); err != nil {
