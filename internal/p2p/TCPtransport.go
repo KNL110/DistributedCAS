@@ -23,6 +23,7 @@ func NewTCPtransport(listenAddr string,decoder Decoder) *TCPtransport {
 		peers: make(map[net.Addr]peer),
 		shakeHands: Handshake,
 		decoder: decoder,
+		rpcChan: make(chan RPC),
 	}
 }
 
@@ -38,10 +39,10 @@ func (t* TCPtransport) ListenAndAccept() error {
 }
 
 // a read-only channel that returns RPC messages received from peers
-func(t* TCPtransport) consume() <-chan RPC {
-	rpcChan := make(chan RPC)
-	return rpcChan
+func(t* TCPtransport) Consume() <-chan RPC {
+	return t.rpcChan
 }
+
 func (t *TCPtransport) startAcceptLoop()  {
 	for {
 		conn, err := t.listener.Accept()
@@ -72,7 +73,5 @@ func (t *TCPtransport) handleConn(conn net.Conn){
 		}
 		msg.from = conn.RemoteAddr()
 		t.rpcChan <- msg
-		// Process the decoded message (msg) here
-		fmt.Printf("message: %+v\n",msg)
 	}
 }

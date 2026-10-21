@@ -26,10 +26,6 @@ func (p *TCPPeer) Address() string {
 	return p.conn.RemoteAddr().String()
 }
 
-func (p *TCPPeer) Disconnect() error {
-	return p.conn.Close()
-}
-
-func (p *TCPPeer) close() error {
+func (p *TCPPeer) Close() error {
 	return p.conn.Close()
 }

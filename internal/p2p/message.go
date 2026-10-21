@@ -11,7 +11,7 @@ type RPC struct {
 	from net.Addr
 	payload []byte
 }
-
-func (m *RPC) String() string {
+//TODO: see if fxn by value is better than by reference
+func (m RPC) String() string {
 	return fmt.Sprintf("{from:%s payload:%q}", m.from, m.payload)
 }
