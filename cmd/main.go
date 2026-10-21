@@ -11,7 +11,10 @@ func main() {
 
 	config := config.MustLoad()
 
-	tr := p2p.NewTCPtransport(config.Protocol.Port)
+	tr := p2p.NewTCPtransport(
+		config.Protocol.Port,
+		p2p.GOBDecoder{},
+	)
 	if err := tr.ListenAndAccept(); err != nil {
 		log.Fatalf("Failed to start TCP transport: %v", err)
 	}

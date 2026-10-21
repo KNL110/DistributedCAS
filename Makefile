@@ -3,7 +3,7 @@ build:
 	@go build -o ./bin/DistributedCAS.elf ./cmd/
 
 run: build
-	@./bin/DistributedCAS
+	@./bin/DistributedCAS.elf
 	
 test:
 	@go test -v ./...

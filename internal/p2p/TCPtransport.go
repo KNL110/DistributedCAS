@@ -46,8 +46,6 @@ func (t *TCPtransport) startAcceptLoop()  {
 	}
 }
 
-
-type temp struct {}
 func (t *TCPtransport) handleConn(conn net.Conn){
 	peer := NewTCPPeer(conn, Inbound)
 
