@@ -68,8 +68,12 @@ func (t *TCPtransport) startAcceptLoop()  {
 }
 
 func (t *TCPtransport) handleConn(conn net.Conn){
-	defer conn.Close()
 	peer := NewTCPPeer(conn, Inbound)
+
+	defer func(){
+		fmt.Printf("dropping peer connection {conn:%s}\n", peer.Address())
+		conn.Close()
+	}()
 
 	if err := t.shakeHands(peer); err != nil {
 		fmt.Printf("TCP handshake error: %s\n", err)
@@ -88,8 +92,10 @@ func (t *TCPtransport) handleConn(conn net.Conn){
 	msg.from = conn.RemoteAddr()
 	for {
 		if err := t.decoder.Decode(r, &msg); err != nil {
-			if !errors.Is(err, io.EOF) {
-				fmt.Printf("TCP Decode Error: %s\n", err)
+			if errors.Is(err, net.ErrClosed) || errors.Is(err, io.EOF) {
+				fmt.Printf("TCP connection closed {conn:%s}\n", peer.Address())
+			} else {
+				fmt.Printf("TCP decode error: %s\n", err)
 			}
 			return
 		}
