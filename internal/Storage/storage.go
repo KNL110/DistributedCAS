@@ -1,8 +1,10 @@
 package storage
 
 import (
-	// "io"
-	// "os"
+	"fmt"
+	"io"
+	"log"
+	"os"
 )
 
 type StoreOpts struct {
@@ -19,13 +21,28 @@ func NewStore(opts StoreOpts) *Store {
 	}
 }
 
-// func (s *Store) writeStream(key string, r io.Reader) error {
-// 	pathName := s.PathTransformer(key)
+func (s *Store) writeStream(key string, r io.Reader) error {
+	pathName := s.PathTransformer(key)
 
-// 	if err := os.MkdirAll(pathName,os.ModePerm); err != nil {
-// 		return err
-// 	}
+	if err := os.MkdirAll(pathName,os.ModePerm); err != nil {
+		return err
+	}
 
+	filename := "test.txt"
+	filePath := pathName + "/" + filename
 
-// 	return nil
-// }
+	f,err := os.Create(filePath)
+	if err != nil {
+		return fmt.Errorf("error opening file %s: %w", filePath, err)
+	}
+	defer f.Close()
+
+	n, err := io.Copy(f,r)
+	if err != nil {
+		return fmt.Errorf("error writing to file %s: %w", f.Name(), err)
+	}
+
+	log.Printf("written (%d) bytes to disk: %s", n,filePath)
+
+	return nil
+}
