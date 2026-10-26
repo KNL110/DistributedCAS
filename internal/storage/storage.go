@@ -9,7 +9,7 @@ import (
 )
 
 type StoreOpts struct {
-	root string
+	Root string
 	PathMaker pathMaker
 }
 
@@ -28,11 +28,11 @@ func NewStore(opts StoreOpts) *Store {
 
 func (s *Store) writeStream(r io.Reader) (string, error) {
 
-	if err := os.MkdirAll(s.root, 0o755); err != nil {
+	if err := os.MkdirAll(s.Root, 0o755); err != nil {
 		return "", err
 	}
 
-	tmp, err := os.CreateTemp(s.root,"tmp-*")
+	tmp, err := os.CreateTemp(s.Root,"tmp-*")
 	if err != nil {
 		return "", fmt.Errorf("error creating temp file: %w",err)
 	}
@@ -43,12 +43,12 @@ func (s *Store) writeStream(r io.Reader) (string, error) {
 		return "",fmt.Errorf("path transform error: %w",err)
 	}
 
-	dir := filepath.Join(s.root,pathKey.pathName)
+	dir := filepath.Join(s.Root,pathKey.pathName)
 	if err := os.MkdirAll(dir,0o755); err != nil {
 		return "",err
 	}
 
-	finalPath := filepath.Join(s.root,pathKey.fullPath())
+	finalPath := filepath.Join(s.Root,pathKey.fullPath())
 	if err := os.Rename(tmp.Name(),finalPath); err != nil {
 		return "",fmt.Errorf("error moving %s to %s: %w", tmp.Name(),finalPath,err)
 	}

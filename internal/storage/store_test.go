@@ -12,7 +12,7 @@ import (
 
 func TestStore(t *testing.T) {
 	storeOpts := StoreOpts{
-		root: t.TempDir(),
+		Root: t.TempDir(),
 		PathMaker: CASPathMake,
 	}
 	store := NewStore(storeOpts)
@@ -28,7 +28,7 @@ func TestStore(t *testing.T) {
 	}
 
 	pk := NewpathKey(hash)
-	if _, err := os.Stat(filepath.Join(store.root, pk.fullPath())); err != nil {
+	if _, err := os.Stat(filepath.Join(store.Root, pk.fullPath())); err != nil {
 		t.Fatalf("file not at content address: %v", err)
 	}
 }
