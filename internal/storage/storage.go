@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 )
 
+const defaultRoot string = "knl"
+
 type StoreOpts struct {
 	Root string
 	PathKey func (string) *PathKey
@@ -22,6 +24,9 @@ type Store struct {
 func NewStore(opts StoreOpts) *Store {
 	if opts.PathKey == nil {
 		opts.PathKey = NewpathKey
+	}
+	if len(opts.Root) == 0 {
+		opts.Root = defaultRoot
 	}
 	return &Store{
 		StoreOpts: opts,
