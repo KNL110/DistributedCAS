@@ -2,20 +2,33 @@ package storage
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
 
 func TestStore(t *testing.T) {
 	storeOpts := StoreOpts{
-		PathTransformer: SHA256transform,
+		root: t.TempDir(),
+		PathMaker: CASPathMake,
 	}
 	store := NewStore(storeOpts)
-
-	key := "somekey"
-	reader := bytes.NewReader([]byte("fuck"))
-	err := store.writeStream(key,reader)
+	data := []byte("some content")
+	reader := bytes.NewReader(data)
+	hash,err := store.writeStream(reader)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
+	}
+	sum := sha256.Sum256(data)
+	if want := hex.EncodeToString(sum[:]); hash != want {
+		t.Fatalf("hash = %s, want = %s", hash,want)
+	}
+
+	pk := NewpathKey(hash)
+	if _, err := os.Stat(filepath.Join(store.root, pk.fullPath())); err != nil {
+		t.Fatalf("file not at content address: %v", err)
 	}
 }

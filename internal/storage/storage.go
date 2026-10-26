@@ -5,10 +5,12 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 type StoreOpts struct {
-	PathTransformer pathTransformer
+	root string
+	PathMaker pathMaker
 }
 
 type Store struct {
@@ -16,35 +18,42 @@ type Store struct {
 }
 
 func NewStore(opts StoreOpts) *Store {
-	if opts.PathTransformer == nil {
-		opts.PathTransformer = SHA256transform
+	if opts.PathMaker == nil {
+		opts.PathMaker = CASPathMake
 	}
 	return &Store{
 		StoreOpts: opts,
 	}
 }
 
-func (s *Store) writeStream(key string, r io.Reader) (error) {
-	pathKey := s.PathTransformer(key)
+func (s *Store) writeStream(r io.Reader) (string, error) {
 
-	if err := os.MkdirAll(pathKey.pathName,os.ModePerm); err != nil {
-		return err
+	if err := os.MkdirAll(s.root, 0o755); err != nil {
+		return "", err
 	}
 
-	filePath := pathKey.fullPath()
-
-	f,err := os.Create(filePath)
+	tmp, err := os.CreateTemp(s.root,"tmp-*")
 	if err != nil {
-		return fmt.Errorf("error opening file %s: %w", filePath, err)
+		return "", fmt.Errorf("error creating temp file: %w",err)
 	}
-	defer f.Close()
+	defer os.Remove(tmp.Name()) //no-op once the rename happens successfully
 
-	n, err := io.Copy(f,r)
+	pathKey,err := s.PathMaker(tmp, r)
 	if err != nil {
-		return fmt.Errorf("error writing to file %s: %w", f.Name(), err)
+		return "",fmt.Errorf("path transform error: %w",err)
 	}
 
-	log.Printf("written (%d) bytes to disk: %s", n,filePath)
+	dir := filepath.Join(s.root,pathKey.pathName)
+	if err := os.MkdirAll(dir,0o755); err != nil {
+		return "",err
+	}
 
-	return nil
+	finalPath := filepath.Join(s.root,pathKey.fullPath())
+	if err := os.Rename(tmp.Name(),finalPath); err != nil {
+		return "",fmt.Errorf("error moving %s to %s: %w", tmp.Name(),finalPath,err)
+	}
+
+	log.Printf("written (%d) bytes to disk: %s", pathKey.written,finalPath)
+
+	return pathKey.fileName,nil
 }
