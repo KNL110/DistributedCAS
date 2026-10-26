@@ -8,7 +8,7 @@ import (
 
 func TestStore(t *testing.T) {
 	storeOpts := StoreOpts{
-		PathTransformer: SHA1transform,
+		PathTransformer: SHA256transform,
 	}
 	store := NewStore(storeOpts)
 

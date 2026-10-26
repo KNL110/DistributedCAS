@@ -16,6 +16,9 @@ type Store struct {
 }
 
 func NewStore(opts StoreOpts) *Store {
+	if opts.PathTransformer == nil {
+		opts.PathTransformer = SHA256transform
+	}
 	return &Store{
 		StoreOpts: opts,
 	}
