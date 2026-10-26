@@ -78,3 +78,63 @@ func TestStoreReadInvalidHash(t *testing.T) {
 		}
 	}
 }
+func TestStoreHasDelete(t *testing.T) {
+	store := NewStore(StoreOpts{Root: t.TempDir()})
+	hash, err := store.Write(bytes.NewReader([]byte("some content")))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !store.Has(hash) {
+		t.Fatalf("Has(%s) = false after write", hash)
+	}
+	if err := store.Delete(hash); err != nil {
+		t.Fatal(err)
+	}
+	if store.Has(hash) {
+		t.Fatalf("Has(%s) = true after delete", hash)
+	}
+
+	if err := store.Delete(hash); !errors.Is(err, fs.ErrNotExist) {
+		t.Fatalf("second Delete err = %v, want fs.ErrNotExist", err)
+	}
+}
+
+func TestStoreHasDeleteInvalidHash(t *testing.T) {
+	store := NewStore(StoreOpts{Root: t.TempDir()})
+
+	for _, hash := range []string{"", "ab", "../../etc/passwd", strings.Repeat("z", 64)} {
+		if store.Has(hash) {
+			t.Errorf("Has(%q) = true, want false", hash)
+		}
+		if err := store.Delete(hash); err == nil {
+			t.Errorf("Delete(%q) succeeded, want error", hash)
+		}
+	}
+}
+
+func TestStoreWriteDedup(t *testing.T) {
+	store := NewStore(StoreOpts{Root: t.TempDir()})
+	data := []byte("same bytes")
+
+	h1, err := store.Write(bytes.NewReader(data))
+	if err != nil {
+		t.Fatal(err)
+	}
+	h2, err := store.Write(bytes.NewReader(data))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if h1 != h2 {
+		t.Fatalf("same content gave different hashes: %s, %s", h1, h2)
+	}
+
+	// no leftover temp files: only the top-level shard dir should remain
+	entries, err := os.ReadDir(store.Root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 1 {
+		t.Fatalf("Root has %d entries, want 1: %v", len(entries), entries)
+	}
+}

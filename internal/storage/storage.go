@@ -70,6 +70,10 @@ func (s *Store) Write(r io.Reader) (string, error) {
 	}
 
 	hash := hex.EncodeToString(h.Sum(nil))
+	if s.Has(hash) {
+		log.Printf("content already stored, skipping write: %s", hash)
+		return hash, nil
+	}
 	pathKey := s.PathKey(hash)
 
 	dir := filepath.Join(s.Root,pathKey.PathName)
@@ -85,6 +89,29 @@ func (s *Store) Write(r io.Reader) (string, error) {
 	log.Printf("written (%d) bytes to disk: %s", written,finalPath)
 
 	return pathKey.FileName,nil
+}
+
+func (s *Store) Has(hash string) bool {
+	if !validHash(hash) {
+		return false
+	}
+	pathKey := s.PathKey(hash)
+	_, err := os.Stat(filepath.Join(s.Root, pathKey.fullPath()))
+	return err == nil
+}
+
+func (s *Store) Delete(hash string) error {
+	if !validHash(hash) {
+		return fmt.Errorf("invalid hash %q", hash)
+	}
+	pathKey := s.PathKey(hash)
+	filePath := filepath.Join(s.Root, pathKey.fullPath())
+	if err := os.Remove(filePath); err != nil {
+		return fmt.Errorf("error deleting %s: %w", hash, err)
+	}
+
+	log.Printf("deleted from disk: %s", filePath)
+	return nil
 }
 
 
