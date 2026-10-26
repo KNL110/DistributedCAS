@@ -13,7 +13,7 @@ type pathTransformer func(string) pathKey
 func DefaultPathTransform(key string) pathKey {
 	return pathKey{
 		pathName: key,
-		ogName: key,
+		fileName: key,
 	}
 }
 
@@ -32,6 +32,6 @@ func SHA1transform(key string) pathKey {
 
 	return pathKey{
 		pathName: strings.Join(paths,"/"),
-		ogName: hashStr,
+		fileName: hashStr,
 	}
 }

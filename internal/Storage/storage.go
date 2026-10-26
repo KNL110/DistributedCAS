@@ -28,7 +28,7 @@ func (s *Store) writeStream(key string, r io.Reader) (error) {
 		return err
 	}
 
-	filePath := pathKey.fileName()
+	filePath := pathKey.fullPath()
 
 	f,err := os.Create(filePath)
 	if err != nil {
