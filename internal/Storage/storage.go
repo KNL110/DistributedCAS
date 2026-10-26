@@ -21,15 +21,14 @@ func NewStore(opts StoreOpts) *Store {
 	}
 }
 
-func (s *Store) writeStream(key string, r io.Reader) error {
-	pathName := s.PathTransformer(key)
+func (s *Store) writeStream(key string, r io.Reader) (error) {
+	pathKey := s.PathTransformer(key)
 
-	if err := os.MkdirAll(pathName,os.ModePerm); err != nil {
+	if err := os.MkdirAll(pathKey.pathName,os.ModePerm); err != nil {
 		return err
 	}
 
-	filename := "test.txt"
-	filePath := pathName + "/" + filename
+	filePath := pathKey.fileName()
 
 	f,err := os.Create(filePath)
 	if err != nil {
